@@ -12,4 +12,4 @@ echo "DISCOVERY_AS_LOCALHOST="$DISCOVERY_AS_LOCALHOST
 
 echo "run fabcar..."
 
-go run fabcar.go
+go run *.go
