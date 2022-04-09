@@ -17,8 +17,10 @@ else
 fi
 
 # clean out any old identites in the wallets
-rm -rf go/wallet/*
-
+rm -rf client0/sdkgo/wallet/*
+rm -rf client0/sdkgo/keystore
+rm -rf client1/sdkgo/wallet/*
+rm -rf client1/sdkgo/keystore
 # launch network; create channel and join peer to channel
 pushd ../test-network
 ./network.sh down
