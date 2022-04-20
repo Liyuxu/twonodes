@@ -21,6 +21,11 @@ type LocalEmbedding struct {
 	Predict string
 }
 
+type Contributions struct {
+	Owner       string
+	ContriValue string
+}
+
 // SubmitLocalEmbedding adds a new LocalEmbedding to the world state with given details
 func (s *SmartContract) SubmitTaskInfo(ctx contractapi.TransactionContextInterface, taskInfoNumber string, numNodes string, numIter string, batchsize string, outDimension string) error {
 	taskInfo := TaskInformation{
@@ -79,4 +84,31 @@ func (s *SmartContract) QueryLocalEmbedding(ctx contractapi.TransactionContextIn
 	_ = json.Unmarshal(localEmbeddingAsBytes, localEmbedding)
 
 	return localEmbedding, nil
+}
+
+func (s *SmartContract) SubmitContribution(ctx contractapi.TransactionContextInterface, contributionContractName string, owner string, contriValue string) error {
+	contributions := Contributions{
+		Owner:       owner,
+		ContriValue: contriValue,
+	}
+	contributionsAsBytes, _ := json.Marshal(contributions)
+
+	return ctx.GetStub().PutState(contributionContractName, contributionsAsBytes)
+}
+
+func (s *SmartContract) QueryContribution(ctx contractapi.TransactionContextInterface, contributionContractName string) (*Contributions, error) {
+	contributionsAsBytes, err := ctx.GetStub().GetState(contributionContractName)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from world state. %s", err.Error())
+	}
+
+	if contributionsAsBytes == nil {
+		return nil, fmt.Errorf("%s does not exist", contributionsAsBytes)
+	}
+
+	contributions := new(Contributions)
+	_ = json.Unmarshal(contributionsAsBytes, contributions)
+
+	return contributions, nil
 }

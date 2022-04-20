@@ -1,3 +1,4 @@
+from statistics import mean
 import torch.nn as nn
 import torch.nn.functional as F
 import importlib
@@ -173,12 +174,20 @@ try:
         criterion = torch.nn.CrossEntropyLoss()
 
         cv_acc, cv_loss = [], []
-
+        cv_time = []
         while True:
             print('---------------------------------------------------------------------------')
+            iter_start = time.time()
             msg = recv_msg(sock, 'GO_TO_PYTHON_SAMPLER_INFO')
             if msg == "MISSION_END":
+                saveTitle = 'Blockclient' + str(ClientID) + '_T' + str(num_iter) \
+                            + 'B' + str(batch_size)
+                saveVariableName = saveTitle
+                scipy.io.savemat(saveTitle + '_acc' + '.mat', mdict={saveVariableName + '_acc': cv_acc})
+                scipy.io.savemat(saveTitle + '_loss' + '.mat', mdict={saveVariableName + '_loss': cv_loss})
+                scipy.io.savemat(saveTitle + '_time' + '.mat', mdict={saveVariableName + '_time': cv_time})
                 print("mission end")
+                print("每轮训练平均用时:", mean(cv_time))
                 sys.exit(0)
             sampler = int(msg[1])
             cur_iter = int(msg[2])
@@ -240,6 +249,8 @@ try:
             cv_acc.append(testaccuracy)
             cv_loss.append(testloss)
             print("------ acc =", testaccuracy, "------ loss =", testloss)
+            iter_end = time.time()
+            cv_time.append(iter_end - iter_start)
 
 except (struct.error, socket.error):
     print('Server has stopped')

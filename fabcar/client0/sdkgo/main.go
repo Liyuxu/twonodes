@@ -154,7 +154,7 @@ func main() {
 			if err != nil {
 				fmt.Println("error writeFile")
 			}
-			fmt.Println(ledgerPredFileName + "writeFIle success.")
+			fmt.Println("../ledger/" + ledgerPredFileName + "writeFIle success.")
 		}
 
 		// 发送梯度帮助更新本地模型
@@ -163,7 +163,28 @@ func main() {
 		if err != nil {
 			fmt.Println("SAMPLER_INFO send fail.")
 		}
-		time.Sleep(time.Duration(20) * time.Millisecond)
+		//time.Sleep(time.Duration(20) * time.Millisecond)
+
+		fmt.Println(">> 评估贡献度")
+		buf = make([]byte, 512)
+		lens, err = connection.Read(buf)
+		if err != nil {
+			log.Fatal(fmt.Sprintf("connection.Read error: %s", err.Error()))
+		}
+		signal = buf[:lens]
+		//解析信号
+		signalSlice = strings.Split(string(signal), "#")
+		if signalSlice[0] != "PYTHON_TO_GO_CONTRI" {
+			log.Fatal(errors.New("can't get PYTHON_TO_GO_CONTRI"))
+		}
+		fmt.Println("收到Client", signalSlice[1], "的贡献度评估结果:", signalSlice[2])
+		contributionContractName := "Contribution_T" + strconv.Itoa(iter) + "C" + signalSlice[1]
+		result, err = contract.SubmitTransaction("SubmitContribution", contributionContractName, "client"+signalSlice[1], signalSlice[2])
+		if err != nil {
+			fmt.Printf("Failed to submit transaction--SubmitContribution: %s\n", err)
+			os.Exit(1)
+		}
+		fmt.Println(contributionContractName + " SubmitContribution success." + string(result))
 	}
 
 }
