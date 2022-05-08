@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -96,6 +97,8 @@ func main() {
 	indices := 60000.0
 	indices = math.Ceil(indices / float64(batch))
 
+	submitTimeSlice := make([]string, numIter)
+
 	for iter := 0; iter < numIter; iter++ {
 		fmt.Println("------------------------------------------------")
 		fmt.Println(">> Iter : ", iter)
@@ -179,12 +182,31 @@ func main() {
 		}
 		fmt.Println("收到Client", signalSlice[1], "的贡献度评估结果:", signalSlice[2])
 		contributionContractName := "Contribution_T" + strconv.Itoa(iter) + "C" + signalSlice[1]
+		start := time.Now()
 		result, err = contract.SubmitTransaction("SubmitContribution", contributionContractName, "client"+signalSlice[1], signalSlice[2])
 		if err != nil {
 			fmt.Printf("Failed to submit transaction--SubmitContribution: %s\n", err)
 			os.Exit(1)
 		}
+		cost := time.Since(start)
+		submitTimeSlice[iter] = cost.String()
 		fmt.Println(contributionContractName + " SubmitContribution success." + string(result))
 	}
+	File, err := os.OpenFile("submitTime.csv", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		log.Println("文件打开失败！")
+	}
+	defer File.Close()
+
+	//创建写入接口
+	WriterCsv := csv.NewWriter(File)
+
+	//写入一条数据，传入数据为切片(追加模式)
+	err1 := WriterCsv.Write(submitTimeSlice)
+	if err1 != nil {
+		log.Println("WriterCsv写入文件失败")
+	}
+	WriterCsv.Flush() //刷新，不刷新是无法写入的
+	log.Println("数据写入成功...")
 
 }
