@@ -111,9 +111,13 @@ python client.py
 
 2、`ERROR: manifest for hyperledger/fabric-orderer:latest not found: manifest unknown: manifest unknown`
 
-进入https://hub.docker.com/r/hyperledger/fabric-orderer，查看Tags
+进入https://hub.docker.com/r/hyperledger/fabric-orderer
 
-运行`sudo docker pull hyperledger/fabric-orderer:2.2`，等待拉取完成
+查看Tags
+
+运行`sudo docker pull hyperledger/fabric-orderer:2.2`
+
+等待拉取完成
 
 运行`sudo docker tag hyperledger/fabric-orderer:2.2 hyperledger/fabric-orderer:latest`，更改fabric-orderer:2.2 名称为 fabric-orderer:latest
 
